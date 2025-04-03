@@ -2,692 +2,115 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Talking Tom RGB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Sharing</title>
     <style>
-        :root {
-            --color-1: #ff00aa;
-            --color-2: #00aaff;
-            --color-3: #aa00ff;
-            --color-4: #ffaa00;
-            --color-5: #00ffaa;
-            --color-6: #aa00ff;
-            --color-bg: #111122;
-            --color-text: #ffffff;
-        }
-
-        @keyframes rgbFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 132, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(255, 0, 132, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 132, 0); }
-        }
-
-        @keyframes textShine {
-            0% { background-position: 0% center; }
-            100% { background-position: 300% center; }
-        }
-
-        @keyframes borderGlow {
-            0% { border-color: var(--color-1); }
-            33% { border-color: var(--color-2); }
-            66% { border-color: var(--color-3); }
-            100% { border-color: var(--color-1); }
-        }
-
-        @keyframes bounce {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) translateX(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.8;
-            }
-            90% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(-100px) translateX(100px);
-                opacity: 0;
-            }
-        }
-
-        * {
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            overflow-x: hidden;
-            touch-action: manipulation;
-            background: linear-gradient(-45deg, 
-                #111122, 
-                #221133, 
-                #331144, 
-                #221133);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            position: relative;
-            width: 95%;
-            max-width: 500px;
-            padding: 30px;
-            border-radius: 25px;
-            background: rgba(20, 20, 40, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid transparent;
-            animation: borderGlow 6s linear infinite;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
-                        inset 0 0 20px rgba(255, 255, 255, 0.1);
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 30% 30%, var(--color-1), transparent 70%),
-                radial-gradient(circle at 70% 30%, var(--color-2), transparent 70%),
-                radial-gradient(circle at 30% 70%, var(--color-3), transparent 70%),
-                radial-gradient(circle at 70% 70%, var(--color-4), transparent 70%);
-            background-size: 200% 200%;
-            animation: rgbFlow 15s linear infinite;
-            opacity: 0.2;
-            z-index: -1;
-            mix-blend-mode: overlay;
-        }
-
-        h1 {
-            color: white;
-            margin-bottom: 25px;
-            font-size: 2.2rem;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-            background: linear-gradient(90deg, 
-                var(--color-1), 
-                var(--color-2), 
-                var(--color-3),
-                var(--color-4),
-                var(--color-1));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            background-size: 300% auto;
-            animation: textShine 6s linear infinite;
-            letter-spacing: 1px;
-        }
-
-        .cat-container {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            margin: 0 auto 30px;
-            animation: float 6s ease-in-out infinite;
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
-        }
-
-        .cat-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 0 20px var(--color-1));
-        }
-
-        .cat-image.talking {
-            animation: bounce 0.5s infinite, glow 2s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { filter: drop-shadow(0 0 10px var(--color-1)); }
-            25% { filter: drop-shadow(0 0 15px var(--color-2)); }
-            50% { filter: drop-shadow(0 0 20px var(--color-3)); }
-            75% { filter: drop-shadow(0 0 15px var(--color-4)); }
-            100% { filter: drop-shadow(0 0 10px var(--color-5)); }
-        }
-
-        .speech-bubble {
-            position: absolute;
-            top: -80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
-            border-radius: 25px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            max-width: 220px;
-            word-wrap: break-word;
+        h2 {
             color: #333;
-            font-weight: bold;
-            font-size: 16px;
-            text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            z-index: 10;
-        }
-
-        .speech-bubble.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-5px);
-        }
-
-        .speech-bubble:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            margin-left: -10px;
-            border-width: 10px 10px 0;
-            border-style: solid;
-            border-color: rgba(255, 255, 255, 0.95) transparent transparent;
-        }
-
-        .controls {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, 
-                var(--color-1), 
-                var(--color-2));
-            color: white;
-            border: none;
-            padding: 16px 35px;
-            font-size: 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
-            font-weight: bold;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            max-width: 250px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.2), 
-                transparent);
-            transition: 0.5s;
-            z-index: -1;
-        }
-
-        .btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
-            background: linear-gradient(45deg, 
-                var(--color-2), 
-                var(--color-3));
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn.listening {
-            background: linear-gradient(45deg, #ff0066, #ff00aa);
-            animation: pulse 1.5s infinite, btnShine 3s infinite;
-        }
-
-        @keyframes btnShine {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-
-        .btn.restart {
-            background: linear-gradient(45deg, var(--color-5), var(--color-6));
-        }
-
-        .btn.restart:hover {
-            background: linear-gradient(45deg, var(--color-6), var(--color-1));
-        }
-
-        .status {
-            margin-top: 15px;
-            color: #aaa;
-            font-style: italic;
-            min-height: 20px;
-            font-size: 14px;
-            text-align: center;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .permission-note {
-            font-size: 12px;
-            color: #888;
             margin-top: 20px;
-            max-width: 80%;
+        }
+        .input-container {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 50%;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .link-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .link-item {
+            margin: 15px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             text-align: center;
-            line-height: 1.5;
         }
-
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-            overflow: hidden;
+        .link-item img {
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            display: block;
+            border-radius: 10px;
+            transition: transform 0.3s;
         }
-
-        .particle {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            border-radius: 50%;
-            animation: particleFloat linear infinite;
-            opacity: 0;
+        .link-item img:hover {
+            transform: scale(1.1);
         }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-                width: 90%;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .cat-container {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .btn {
-                padding: 14px 25px;
-                font-size: 16px;
-            }
+        .link-item p {
+            margin: 10px 0;
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <h1>Talking Singer Sumon</h1>
-        
-        <div class="cat-container">
-            <div class="speech-bubble" id="speechBubble"></div>
-            <img src="https://iili.io/3RhM8dX.png" alt="Talking Tom" class="cat-image" id="catImage">
-        </div>
-        
-        <div class="controls">
-            <button class="btn" id="playButton">Tap to Talk</button>
-            <button class="btn restart" id="restartButton">Restart Game</button>
-            <div class="status" id="status">Ready to play!</div>
-            <div class="permission-note">Note: This game requires microphone access. Your voice is processed locally and never stored.</div>
-        </div>
+    <h2>Upload Your Links</h2>
+    <div class="input-container">
+        <input type="text" id="title" placeholder="Enter Title" required>
+        <input type="url" id="url" placeholder="Enter URL" required>
+        <input type="file" id="image" accept="image/*" required>
+        <button onclick="addLink()">Add Link</button>
     </div>
-
+    <div class="link-container" id="linkContainer"></div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Create floating particles
-            const particlesContainer = document.getElementById('particles');
-            const colors = ['#ff00aa', '#00aaff', '#aa00ff', '#ffaa00', '#00ffaa'];
-            for (let i = 0; i < 100; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.animationDuration = `${5 + Math.random() * 15}s`;
-                particle.style.animationDelay = `${Math.random() * 5}s`;
-                particle.style.opacity = Math.random() * 0.5;
-                particle.style.width = `${2 + Math.random() * 3}px`;
-                particle.style.height = particle.style.width;
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                particlesContainer.appendChild(particle);
-            }
-
-            const playButton = document.getElementById('playButton');
-            const restartButton = document.getElementById('restartButton');
-            const catImage = document.getElementById('catImage');
-            const speechBubble = document.getElementById('speechBubble');
-            const statusElement = document.getElementById('status');
+        function addLink() {
+            const title = document.getElementById("title").value;
+            const url = document.getElementById("url").value;
+            const imageInput = document.getElementById("image");
             
-            let isListening = false;
-            let recognition;
-            let lastSpokenText = '';
-            let speechSynthesis = window.speechSynthesis;
-            let recognitionIsStarting = false;
-            
-            function initializeSpeechRecognition() {
-                try {
-                    if ('webkitSpeechRecognition' in window) {
-                        recognition = new webkitSpeechRecognition();
-                    } else if ('SpeechRecognition' in window) {
-                        recognition = new SpeechRecognition();
-                    } else {
-                        throw new Error('Speech recognition not supported');
-                    }
-                    
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-                    recognition.lang = 'en-US';
-                    
-                    recognition.onstart = function() {
-                        isListening = true;
-                        recognitionIsStarting = false;
-                        playButton.classList.add('listening');
-                        playButton.textContent = 'Listening...';
-                        statusElement.textContent = 'Listening... Speak now!';
-                        statusElement.style.color = '#00ffaa';
-                        catImage.classList.add('talking');
-                    };
-                    
-                    recognition.onend = function() {
-                        isListening = false;
-                        recognitionIsStarting = false;
-                        playButton.classList.remove('listening');
-                        playButton.textContent = 'Tap to Talk';
-                        catImage.classList.remove('talking');
-                        
-                        if (!lastSpokenText) {
-                            statusElement.textContent = 'Didn\'t hear anything. Try again!';
-                            statusElement.style.color = '#ff0066';
-                        }
-                    };
-                    
-                    recognition.onerror = function(event) {
-                        isListening = false;
-                        recognitionIsStarting = false;
-                        playButton.classList.remove('listening');
-                        playButton.textContent = 'Tap to Talk';
-                        catImage.classList.remove('talking');
-                        
-                        if (event.error === 'aborted') {
-                            return; // We intentionally stopped recognition
-                        }
-                        
-                        let errorMessage = 'Error: ';
-                        switch(event.error) {
-                            case 'no-speech':
-                                errorMessage += 'No speech detected';
-                                break;
-                            case 'audio-capture':
-                                errorMessage += 'No microphone found';
-                                break;
-                            case 'not-allowed':
-                                errorMessage += 'Microphone access denied';
-                                break;
-                            default:
-                                errorMessage += 'Recognition error: ' + event.error;
-                        }
-                        
-                        statusElement.textContent = errorMessage;
-                        statusElement.style.color = '#ff0066';
-                        console.error('Speech recognition error:', event.error);
-                    };
-                    
-                    recognition.onresult = function(event) {
-                        const transcript = event.results[0][0].transcript;
-                        processSpeech(transcript);
-                    };
-                    
-                    return true;
-                } catch (error) {
-                    console.error('Speech recognition initialization error:', error);
-                    statusElement.textContent = 'Error: ' + error.message;
-                    statusElement.style.color = '#ff0066';
-                    playButton.disabled = true;
-                    return false;
-                }
-            }
-            
-            function processSpeech(transcript) {
-                lastSpokenText = transcript;
-                
-                // Show speech in bubble
-                speechBubble.textContent = transcript;
-                speechBubble.classList.add('visible');
-                
-                // Make cat talk (animate)
-                catImage.classList.add('talking');
-                
-                // Use speech synthesis with male voice effect
-                const utterance = new SpeechSynthesisUtterance(transcript);
-                utterance.pitch = 0.7; // Lower pitch for male voice
-                utterance.rate = 0.85; // Slightly slower for singing effect
-                utterance.volume = 1;
-                
-                // Try to find a male voice
-                const voices = speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    const maleVoices = voices.filter(v => 
-                        v.name.includes('Male') || 
-                        v.name.includes('Man') || 
-                        v.lang.includes('en-US') ||
-                        !v.name.includes('Female'));
-                    if (maleVoices.length > 0) {
-                        utterance.voice = maleVoices[0];
-                    } else {
-                        utterance.voice = voices[0];
-                    }
-                }
-                
-                utterance.onend = function() {
-                    catImage.classList.remove('talking');
-                    setTimeout(() => {
-                        speechBubble.classList.remove('visible');
-                    }, 2000);
-                };
-                
-                speechSynthesis.speak(utterance);
-                
-                statusElement.textContent = 'Tom said: ' + transcript;
-                statusElement.style.color = '#00aaff';
-            }
-            
-            function startListening() {
-                if (isListening || recognitionIsStarting) return;
-                
-                speechBubble.classList.remove('visible');
-                statusElement.textContent = 'Starting...';
-                statusElement.style.color = '#00ffaa';
-                recognitionIsStarting = true;
-                
-                try {
-                    setTimeout(() => {
-                        if (!isListening && recognitionIsStarting) {
-                            recognition.start();
-                        }
-                    }, 100);
-                } catch(e) {
-                    recognitionIsStarting = false;
-                    statusElement.textContent = 'Error: ' + e.message;
-                    statusElement.style.color = '#ff0066';
-                }
-            }
-            
-            function stopListening() {
-                if (!isListening) return;
-                try {
-                    recognition.stop();
-                } catch(e) {
-                    console.error('Error stopping recognition:', e);
-                }
-            }
-            
-            function toggleListening() {
-                if (isListening) {
-                    stopListening();
-                } else {
-                    startListening();
-                }
-            }
-            
-            function replayLastSpeech() {
-                if (!isListening && lastSpokenText) {
-                    speechBubble.textContent = lastSpokenText;
-                    speechBubble.classList.add('visible');
-                    catImage.classList.add('talking');
-                    
-                    const utterance = new SpeechSynthesisUtterance(lastSpokenText);
-                    utterance.pitch = 0.7;
-                    utterance.rate = 0.85;
-                    
-                    // Try to find a male voice again
-                    const voices = speechSynthesis.getVoices();
-                    if (voices.length > 0) {
-                        const maleVoices = voices.filter(v => 
-                            v.name.includes('Male') || 
-                            v.name.includes('Man'));
-                        if (maleVoices.length > 0) {
-                            utterance.voice = maleVoices[0];
-                        }
-                    }
-                    
-                    utterance.onend = function() {
-                        catImage.classList.remove('talking');
-                        setTimeout(() => {
-                            speechBubble.classList.remove('visible');
-                        }, 2000);
-                    };
-                    
-                    speechSynthesis.speak(utterance);
-                    
-                    statusElement.textContent = 'Tom repeated: ' + lastSpokenText;
-                    statusElement.style.color = '#00aaff';
-                }
-            }
-            
-            function restartGame() {
-                // Stop any ongoing recognition
-                if (isListening) {
-                    stopListening();
-                }
-                
-                // Clear previous state
-                lastSpokenText = '';
-                speechBubble.classList.remove('visible');
-                catImage.classList.remove('talking');
-                
-                // Reset UI
-                playButton.classList.remove('listening');
-                playButton.textContent = 'Tap to Talk';
-                statusElement.textContent = 'Game restarted! Ready to play!';
-                statusElement.style.color = '#00ffaa';
-                
-                // Cancel any ongoing speech
-                speechSynthesis.cancel();
-            }
-            
-            // Initialize speech recognition
-            if (!initializeSpeechRecognition()) {
+            if (!title || !url || !imageInput.files.length) {
+                alert("Please fill all fields.");
                 return;
             }
             
-            // Button event listeners
-            playButton.addEventListener('click', function() {
-                if (isListening) {
-                    toggleListening();
-                } else if (lastSpokenText) {
-                    replayLastSpeech();
-                } else {
-                    toggleListening();
-                }
-            });
-            
-            restartButton.addEventListener('click', restartGame);
-            
-            // Mobile touch events
-            playButton.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-            
-            playButton.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                if (isListening) {
-                    toggleListening();
-                } else if (lastSpokenText) {
-                    replayLastSpeech();
-                } else {
-                    toggleListening();
-                }
-            }, { passive: false });
-            
-            restartButton.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-            
-            restartButton.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                restartGame();
-            }, { passive: false });
-            
-            // Load voices when available
-            speechSynthesis.onvoiceschanged = function() {
-                // Voices loaded
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                const container = document.getElementById("linkContainer");
+                const linkItem = document.createElement("div");
+                linkItem.className = "link-item";
+                linkItem.innerHTML = `
+                    <p>${title}</p>
+                    <img src="${imageUrl}" onclick="window.open('${url}', '_blank')">
+                `;
+                container.appendChild(linkItem);
             };
+            reader.readAsDataURL(imageInput.files[0]);
             
-            // Preload the cat image
-            const img = new Image();
-            img.src = 'https://iili.io/3RhM8dX.png';
-        });
+            document.getElementById("title").value = "";
+            document.getElementById("url").value = "";
+            document.getElementById("image").value = "";
+        }
     </script>
 </body>
-  </html>
+</html>
