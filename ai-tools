@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #0b0b0e;
+      --text: #e0e0e0;
+      --chat: #ff4d94;
+      --image: #00c2ff;
+      --code: #18e678;
+      --audio: #ff8a00;
+      --video: #7b3fff;
+      --edu: #f9c80e;
+      --research: #05dfd7;
+      --radius: 18px;
+      --shadow: 0 6px 18px rgba(0,0,0,.25);
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --bg: #f5f7ff; --text: #222; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 3rem; }
+
+    /* ---------- glowing logo ---------- */
+    .logo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 800;
+      font-size: 1.9rem;
+      letter-spacing: -.5px;
+      background: linear-gradient(90deg, var(--chat), var(--image), var(--code), var(--audio), var(--video));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 4px var(--image));
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px var(--image)) drop-shadow(0 0 8px var(--image)); }
+      50% { filter: drop-shadow(0 0 8px var(--image)) drop-shadow(0 0 16px var(--image)); }
+    }
+
+    /* ---------- header bar ---------- */
+    header { position: sticky; top: 0; z-index: 20; background: rgba(11,11,14,.75); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,195,255,.35); }
+    .header-inner { max-width: 1200px; margin: auto; display: flex; align-items: center; justify-content: center; padding: 1rem 1.2rem; flex-wrap: wrap; gap: .5rem; position: relative; }
+
+    /* ---------- filter buttons ---------- */
+    .filter-group { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 3.2rem; /* make room for centred logo */ }
+    .filter-btn {
+      border: none;
+      padding: .5rem 1rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+      background: #222;          /* base dark */
+      color: #bbb;
+    }
+    .filter-btn:hover, .filter-btn:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+    }
+    .filter-btn.active {
+      color: #fff;
+      animation: breathe 2s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { box-shadow: 0 0 6px currentColor; }
+      50% { box-shadow: 0 0 12px currentColor, 0 0 24px currentColor; }
+    }
+    /* individual button colours */
+    .chat { background: var(--chat); color: #fff; }
+    .image { background: var(--image); color: #fff; }
+    .code { background: var(--code); color: #222; }
+    .audio { background: var(--audio); color: #fff; }
+    .video { background: var(--video); color: #fff; }
+    .edu { background: var(--edu); color: #222; }
+    .research { background: var(--research); color: #222; }
+
+    main { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.8rem; }
+    .card-scene { perspective: 1000px; }
+    .card { width: 100%; height: 240px; position: relative; transform-style: preserve-3d; transition: transform .6s; cursor: pointer; }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+    .card-front { background: #111115; color: var(--text); align-items: center; justify-content: center; text-align: center; padding: 1.2rem; }
+    @media (prefers-color-scheme: light) { .card-front { background: #fff; } }
+    .card-back { background: var(--card-bg); color: #fff; transform: rotateY(180deg); padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .card-emoji { font-size: 3.2rem; margin-bottom: .6rem; }
+    .card-title { font-size: 1.25rem; font-weight: 700; }
+    .card-desc { font-size: .95rem; line-height: 1.4; margin-bottom: .8rem; }
+    .card-tag { display: inline-block; background: rgba(255,255,255,.25); padding: .25rem .6rem; border-radius: 999px; font-size: .75rem; margin: .15rem .25rem .15rem 0; }
+    .card-btn { width: calc(100% - 1rem); margin: 0 .5rem .5rem; align-self: center; background: #fff; color: var(--card-bg); border: none; padding: .6rem 1.1rem; border-radius: 999px; font-weight: 600; cursor: pointer; transition: background .2s, color .2s; }
+    .card-btn:hover { background: rgba(255,255,255,.9); }
+
+    footer { position: relative; margin-top: 4rem; text-align: center; padding: 2.5rem 1rem 5rem; background: #0f0f13; border-top: 1px solid rgba(0,195,255,.35); overflow: hidden; }
+    footer::before { content: ""; position: absolute; inset: 0; background-image: 
+      linear-gradient(rgba(0,195,255,.05) 1px, transparent 1px), 
+      linear-gradient(90deg, rgba(0,195,255,.05) 1px, transparent 1px); 
+      background-size: 30px 30px; pointer-events: none; }
+    .rainbow-text { display: inline-block; font-size: 1.5rem; font-weight: 700; background: linear-gradient(90deg, #ff4d94, #00c2ff, #18e678, #ff8a00, #7b3fff, #f9c80e, #05dfd7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: drift 8s linear infinite; }
+    @keyframes drift { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .rgb-contract { font-size: 1.1rem; font-weight: 600; animation: rgbCycle 3s linear infinite; }
+    @keyframes rgbCycle {
+      0%   { color: rgb(255,0,0); }
+      16%  { color: rgb(255,165,0); }
+      33%  { color: rgb(255,255,0); }
+      50% { color: rgb(0,255,0); }
+      66%  { color: rgb(0,255,255); }
+      83%  { color: rgb(0,0,255); }
+      100% { color: rgb(255,0,0); }
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      .header-inner { flex-direction: column; align-items: center; gap: .8rem; }
+      .logo { position: static; transform: none; margin-bottom: .5rem; }
+      .filter-group { margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">AI Tools</div>
+    <nav class="filter-group">
+      <button class="filter-btn active" data-tag="all" style="background:#444; color:#fff">All</button>
+      <button class="filter-btn chat" data-tag="chat">Chat</button>
+      <button class="filter-btn image" data-tag="image">Image</button>
+      <button class="filter-btn code" data-tag="code">Code</button>
+      <button class="filter-btn audio" data-tag="audio">Audio</button>
+      <button class="filter-btn video" data-tag="video">Video</button>
+      <button class="filter-btn edu" data-tag="edu">Education</button>
+      <button class="filter-btn research" data-tag="research">Research</button>
+      <button class="filter-btn" style="background:#ff2a6d; color:#fff" onclick="showAdvice()">Advice</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <p class="rgb-contract">To build your app contract here</p>
+  <p>Created by – Rik | Content: 01885790862 | Email: rik72866@gmail.com</p>
+  <div style="overflow:hidden; white-space:nowrap; margin-top:1rem;">
+    <span class="rainbow-text">Thanks for using us. Come again next time</span>
+  </div>
+</footer>
+
+<script>
+  const tools = [
+    {name:"ChatGPT",emoji:"💬",tags:["chat"],desc:"OpenAI’s conversational large language model. Helps answer questions, write essays, code, brainstorm ideas and much more.",url:"https://chat.openai.com"},
+    {name:"Claude",emoji:"🧑‍🏫",tags:["chat"],desc:"Anthropic’s helpful, harmless and honest AI assistant. Great for long-form writing, analysis and safe conversations.",url:"https://claude.ai"},
+    {name:"Midjourney",emoji:"🎨",tags:["image"],desc:"Text-to-image generator that creates stunning high-resolution artwork, illustrations and concept art via Discord.",url:"https://midjourney.com"},
+    {name:"DALL·E 3",emoji:"🖼",tags:["image"],desc:"OpenAI’s latest text-to-image model. Understands context and details, producing accurate, creative images.",url:"https://openai.com/dall-e-3"},
+    {name:"GitHub Copilot",emoji:"👨‍💻",tags:["code"],desc:"AI pair-programmer that suggests whole lines or blocks of code inside VS Code, JetBrains, Vim and more.",url:"https://github.com/features/copilot"},
+    {name:"Tabnine",emoji:"⚡",tags:["code"],desc:"AI auto-completion for any IDE. Trains on your repo for personalised suggestions while keeping code private.",url:"https://tabnine.com"},
+    {name:"Runway ML",emoji:"🎬",tags:["video"],desc:"Browser-based creative suite: generative video, green-screen, inpainting and motion tracking—no installs needed.",url:"https://runwayml.com"},
+    {name:"Pika Labs",emoji:"🎞",tags:["video"],desc:"Type a sentence, get a short video. Ideal for quick concept trailers, ads or social-media clips.",url:"https://pika.art"},
+    {name:"ElevenLabs",emoji:"🔊",tags:["audio"],desc:"Ultra-realistic text-to-speech and instant voice cloning. Produce audiobooks, podcasts or game voices.",url:"https://elevenlabs.io"},
+    {name:"Murf AI",emoji:"🎙",tags:["audio"],desc:"Studio-quality voice-overs in minutes. 120+ voices, 20 languages, emotion control and team collaboration.",url:"https://murf.ai"},
+    {name:"Khanmigo",emoji:"🎓",tags:["edu"],desc:"Khan Academy’s AI tutor. Guides students step-by-step instead of giving answers; great for parents & teachers.",url:"https://khanacademy.org/khanmigo"},
+    {name:"Duolingo Max",emoji:"🦉",tags:["edu"],desc:"AI-powered personalised lessons, explanations and role-play conversations inside the Duolingo app.",url:"https://duolingo.com/max"},
+    {name:"Gradescope AI",emoji:"📝",tags:["edu"],desc:"Automates grading of handwritten and digital assignments, provides instant feedback and analytics.",url:"https://gradescope.com"},
+    {name:"QuillBot",emoji:"✍",tags:["edu"],desc:"Paraphrase, summarise, grammar-check and cite sources. Perfect for essays and research papers.",url:"https://quillbot.com"},
+    {name:"Perplexity",emoji:"🔍",tags:["research"],desc:"Conversational search engine that answers with short summaries and links to verified sources.",url:"https://perplexity.ai"},
+    {name:"Scite",emoji:"📄",tags:["research"],desc:"Smart citations—see how a paper has been supported or contrasted by later publications.",url:"https://scite.ai"},
+    {name:"Elicit",emoji:"🔬",tags:["research"],desc:"Automated literature reviews. Ask a question, get relevant papers and key findings extracted.",url:"https://elicit.org"},
+    {name:"Research Rabbit",emoji:"🐇",tags:["research"],desc:"Spotify-like research discovery—create collections, get recommendations and visualise networks.",url:"https://researchrabbit.ai"},
+    {name:"Stable Diffusion",emoji:"🖌",tags:["image"],desc:"Open-source text-to-image model you can run locally or via dozens of web front-ends.",url:"https://stability.ai"},
+    {name:"Leonardo AI",emoji:"🎭",tags:["image"],desc:"Production-ready asset generation: game textures, marketing visuals, concept art with fine-grained control.",url:"https://leonardo.ai"},
+    {name:"Adobe Firefly",emoji:"🔥",tags:["image"],desc:"Generative AI for creatives—safe for commercial use, integrated into Photoshop and Illustrator.",url:"https://firefly.adobe.com"},
+    {name:"Canva AI",emoji:"🖍",tags:["image"],desc:"Magic Design, text-to-image, background remover and brand-kit automation inside Canva.",url:"https://canva.com/ai"},
+    {name:"Blackbox AI",emoji:"📦",tags:["code"],desc:"AI coding assistant supporting 20+ languages, IDE agnostic, with GitHub integration.",url:"https://blackbox.ai"},
+    {name:"CodeT5",emoji:"🤖",tags:["code"],desc:"Open-source code-generation model from Salesforce—summarise, translate, generate and refactor code.",url:"https://codet5.github.io"},
+    {name:"Replicate",emoji:"⚙",tags:["code","image","audio"],desc:"Run open-source ML models (Stable Diffusion, Whisper, etc.) via a simple cloud API.",url:"https://replicate.com"},
+    {name:"Hugging Face",emoji:"🤗",tags:["code","chat","image"],desc:"Community hub with 200k+ models and datasets. Deploy instantly with Spaces and Inference API.",url:"https://huggingface.co"},
+    {name:"Suno AI",emoji:"🎵",tags:["audio"],desc:"Create full songs (lyrics + music) from a single text prompt. No instruments needed.",url:"https://suno.ai"},
+    {name:"Soundraw",emoji:"🎧",tags:["audio"],desc:"Royalty-free AI music generator with adjustable mood, genre, tempo and length.",url:"https://soundraw.io"},
+    {name:"Kaiber",emoji:"🎥",tags:["video"],desc:"Transform text or images into stylish music-videos, animations or storyboards.",url:"https://kaiber.ai"},
+    {name:"Fliki",emoji:"📺",tags:["video","audio"],desc:"Turn blog posts or scripts into videos with lifelike AI voices in 75+ languages.",url:"https://fliki.ai"},
+    {name:"Notion AI",emoji:"📝",tags:["chat"],desc:"Brainstorm, summarise, write and edit directly inside your Notion workspace.",url:"https://notion.so/product/ai"},
+    {name:"Jasper",emoji:"💼",tags:["chat"],desc:"Marketing-focused AI that writes blog posts, ads, emails and social copy in your brand voice.",url:"https://jasper.ai"},
+    {name:"DeepL Write",emoji:"🪶",tags:["research"],desc:"AI writing assistant that improves grammar, tone and style while preserving your meaning.",url:"https://deepl.com/write"},
+    {name:"Grammarly GO",emoji:"✏",tags:["chat"],desc:"Context-aware rewrites, replies and idea generation embedded wherever you type.",url:"https://grammarly.com/go"}
+  ];
+
+  const grid = document.getElementById("grid");
+
+  function createCard(t) {
+    const scene = document.createElement("div");
+    scene.className = "card-scene";
+    const colours = { chat:"#ff4d94", image:"#00c2ff", code:"#18e678", audio:"#ff8a00", video:"#7b3fff", edu:"#f9c80e", research:"#05dfd7" };
+    const bg = colours[t.tags[0]] ?? "#777";
+    scene.innerHTML = `
+      <div class="card" style="--card-bg:${bg}">
+        <div class="card-face card-front">
+          <div class="card-emoji">${t.emoji}</div>
+          <div class="card-title">${t.name}</div>
+        </div>
+        <div class="card-face card-back" style="background:${bg}">
+          <div>
+            <div class="card-desc">${t.desc}</div>
+            <div>${t.tags.map(tag=><span class="card-tag">${tag}</span>).join("")}</div>
+          </div>
+          <button class="card-btn" onclick="window.open('${t.url}','_blank')">Open</button>
+        </div>
+      </div>
+    `;
+    return scene;
+  }
+
+  function render(list) {
+    grid.innerHTML = "";
+    list.forEach(t => grid.appendChild(createCard(t)));
+  }
+
+  document.querySelectorAll('.filter-btn[data-tag]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      const tag = e.currentTarget.dataset.tag;
+      render(tag === 'all' ? tools : tools.filter(t => t.tags.includes(tag)));
+    });
+  });
+
+  /* ---- tap-to-flip for phones ---- */
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      card.addEventListener('click', e => {
+        if (!e.target.classList.contains('card-btn')) card.classList.toggle('flipped');
+      });
+    });
+  });
+
+  /* ---- advice ---- */
+  const tips = [
+    "💡 Prompt like a pro: give role, context, clear task, output format.",
+    "🔄 Iterate! Small tweaks in wording can give huge quality jumps.",
+    "🧠 Combine tools: e.g. ChatGPT → Midjourney → Runway for full workflows.",
+    "⚖ Always double-check facts—AI can hallucinate.",
+    "🛡 Respect privacy: avoid uploading sensitive data to cloud tools."
+  ];
+  function showAdvice() {
+    alert(tips[Math.floor(Math.random() * tips.length)]);
+  }
+
+  render(tools);
+</script>
+</body>
+</html>
