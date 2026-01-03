@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; color: #f00; font-family: 'Courier New', monospace; }
+        #ui { position: fixed; top: 20px; left: 20px; z-index: 100; pointer-events: none; background: rgba(20,0,0,0.8); padding: 15px; border: 2px solid #f00; display: none; }
+        #menu-panel { position: fixed; top: 20px; right: 20px; z-index: 1000; display: none; }
+        .menu-btn { background: #300; color: #f00; border: 2px solid #f00; padding: 8px 15px; cursor: pointer; font-weight: bold; margin-bottom: 5px; width: 110px; display: block; font-family: 'Courier New'; }
+        #start-screen, #end-screen { position: fixed; inset: 0; background: #050000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; padding: 20px; }
+        .horror-text { text-shadow: 0 0 10px #f00; font-weight: bold; text-transform: uppercase; }
+        button { background: #f00; color: #000; border: none; padding: 15px 40px; cursor: pointer; font-weight: bold; font-size: 18px; }
+        #overlay-msg { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); z-index: 200; pointer-events: none; text-align: center; display: none; }
+        .danger-alert { color: #f00; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px #f00; animation: blink 0.5s infinite; }
+        .level-up-text { color: #0f0; font-size: 45px; font-weight: bold; text-shadow: 0 0 20px #0f0; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div id="start-screen">
+    <h1 class="horror-text">CRAFT: ALIEN KILLER</h1>
+    <div style="border: 2px solid #f00; padding: 15px; margin-bottom: 15px; background: rgba(30,0,0,0.9); color: #f00; text-align: left; font-size: 14px; line-height: 1.6;">
+        <h3 style="text-align:center; margin-top:0;">--- MISSION PROTOCOL ---</h3>
+        <ul style="list-style: none; padding: 0;">
+            <li>✋ <b>START:</b> ৫টি আঙুল দেখিয়ে শুরু করুন।</li>
+            <li>🕹️ <b>CONTROL:</b> বাম হাত বামে, ডান হাত ডানে। মুভমেন্ট এখন অনেক বেশি নির্ভুল।</li>
+            <li>🔥 <b>POWER FIRE:</b> দুই আঙুল তুললে এখন আরও দ্রুত ও শক্তিশালী গুলি বের হবে।</li>
+            <li>💀 <b>SOLDER BEAM:</b> মুষ্টি (Fist) করলে শক্তিশালী জায়ান্ট সোল্ডার লেজার ফায়ার হবে।</li>
+            <li>👾 <b>ENEMIES:</b> শত্রুরা স্ক্রিনে আসার সাথে সাথেই ধ্বংস করতে পারবেন।</li>
+            <li>❤️ <b>HP RESTORE:</b> বস ধ্বংস করলে হেলথ ফিরে পাবেন।</li>
+        </ul>
+        <div style="text-align:center; color:#fff; font-style:italic; margin-top: 10px;">MADE BY RIK</div>
+    </div>
+    <button onclick="startGame()">INITIATE LINK</button>
+</div>
+
+<div id="end-screen" style="display:none;">
+    <h1 class="horror-text">MISSION ACCOMPLISHED</h1>
+    <p style="color:#fff; font-size: 24px;">THANKS FOR PLAYING!</p>
+    <button onclick="location.reload()">RESTART MISSION</button>
+</div>
+
+<div id="menu-panel">
+    <button class="menu-btn" onclick="togglePause()" id="p-btn">PAUSE</button>
+    <button class="menu-btn" onclick="location.reload()">RESTART</button>
+    <button class="menu-btn" onclick="window.close()">STOP</button>
+</div>
+
+<div id="ui">
+    <div class="horror-text" style="font-size:20px;">KILLS: <span id="score">0</span> | LEVEL: <span id="boss-count">0</span>/15</div>
+    <div style="width: 250px; height: 15px; background: #300; border: 1px solid #f00; margin-top:10px;">
+        <div id="hp-bar" style="width: 100%; height: 100%; background: #f00;"></div>
+    </div>
+</div>
+
+<div id="overlay-msg"></div>
+<video id="v-preview" style="display:none;" autoplay playsinline></video>
+
+<script>
+    let scene, camera, renderer, player1, player2, gameStarted = false, isPaused = false;
+    let aliens = [], bullets = [], enemyBullets = [], score = 0, hp = 100, bossDefeated = 0, enemiesInLevel = 0;
+    
+    let handStates = {
+        'Left': { active: false, targetX: 0, shooting: false, rage: false },
+        'Right': { active: false, targetX: 0, shooting: false, rage: false }
+    };
+
+    const hands = new Hands({locateFile: (file) => https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}});
+    hands.setOptions({ 
+        maxNumHands: 2, 
+        modelComplexity: 1, 
+        minDetectionConfidence: 0.8, 
+        minTrackingConfidence: 0.8 
+    });
+    
+    hands.onResults((res) => {
+        handStates['Left'].active = false;
+        handStates['Right'].active = false;
+
+        if (res.multiHandLandmarks && res.multiHandedness) {
+            res.multiHandLandmarks.forEach((pts, i) => {
+                let label = res.multiHandedness[i].label;
+                const fingers = [4, 8, 12, 16, 20].filter(idx => pts[idx].y < pts[idx-2].y).length;
+                
+                handStates[label].active = true;
+                // Movement range mapping
+                handStates[label].targetX = (0.5 - pts[9].x) * 280;
+                handStates[label].rage = (fingers === 0);
+                handStates[label].shooting = (pts[8].y < pts[6].y && pts[12].y < pts[10].y && fingers <= 3) || handStates[label].rage;
+                
+                if (!gameStarted && fingers >= 5) startGame();
+            });
+        }
+    });
+
+    new Camera(document.getElementById('v-preview'), {
+        onFrame: async () => { await hands.send({image: document.getElementById('v-preview')}); }
+    }).start();
+
+    function createShip() {
+        const g = new THREE.Group();
+        g.add(new THREE.Mesh(new THREE.OctahedronGeometry(2, 0), new THREE.MeshPhongMaterial({color: 0x220000, emissive: 0x990000})));
+        g.add(new THREE.Mesh(new THREE.TorusKnotGeometry(2.5, 0.4, 64, 8), new THREE.MeshPhongMaterial({color: 0x440000})));
+        return g;
+    }
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0000, 0.003);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2500);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        player1 = createShip();
+        player2 = createShip();
+        scene.add(player1, player2);
+
+        const starGeo = new THREE.BufferGeometry();
+        const starPos = [];
+        for(let i=0; i<6000; i++) starPos.push((Math.random()-0.5)*3000, (Math.random()-0.5)*3000, (Math.random()-0.5)*3000);
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xff0000, size: 0.9})));
+
+        scene.add(new THREE.AmbientLight(0x550000), new THREE.PointLight(0xff0000, 3, 1000));
+        camera.position.set(0, 45, 100);
+        camera.lookAt(0, 0, -50);
+        animate();
+    }
+
+    // --- POWERFUL FIRE LOGIC ---
+    function spawnProjectile(shipX, isRage) {
+        let b;
+        if(isRage) {
+            // Solder Giant Fire (Large Laser Beam effect)
+            b = new THREE.Mesh(
+                new THREE.CylinderGeometry(4, 4, 30, 8),
+                new THREE.MeshBasicMaterial({color: 0x00ffff, emissive: 0x00ffff})
+            );
+            b.rotation.x = Math.PI/2;
+            b.isSuper = true;
+        } else {
+            // Powerful Normal Fire
+            b = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.2, 15),
+                new THREE.MeshBasicMaterial({color: 0xff0000})
+            );
+            b.isSuper = false;
+        }
+        b.position.set(shipX, 0, -10);
+        scene.add(b); bullets.push(b);
+    }
+
+    function spawnEnemy(isBoss = false) {
+        const mat = new THREE.MeshPhongMaterial({color: 0x000000, emissive: 0xff0000, wireframe: true});
+        const enemy = new THREE.Group();
+        if(isBoss) {
+            enemy.add(new THREE.Mesh(new THREE.TorusKnotGeometry(40, 12, 100, 16), mat));
+            enemy.isBoss = true; enemy.hp = 5000 + (bossDefeated * 1000); enemy.lastShot = 0;
+            document.getElementById('overlay-msg').innerHTML = '<div class="danger-alert">BOSS DETECTED!</div>';
+            document.getElementById('overlay-msg').style.display = 'block';
+            setTimeout(()=> document.getElementById('overlay-msg').style.display = 'none', 2000);
+        } else {
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 3.5, 14), mat); body.rotation.x = Math.PI/2;
+            const wings = new THREE.Mesh(new THREE.BoxGeometry(22, 1, 5), mat);
+            enemy.add(body, wings); enemy.isBoss = false; enemy.hp = 100;
+        }
+        
+        const hpBar = new THREE.Mesh(new THREE.BoxGeometry(isBoss ? 80 : 15, 2, 2), new THREE.MeshBasicMaterial({color: 0xff0000}));
+        hpBar.position.y = isBoss ? 55 : 15;
+        enemy.add(hpBar);
+        enemy.hpBar = hpBar;
+        enemy.maxHp = enemy.hp;
+
+        enemy.position.set((Math.random()-0.5)*200, 0, isBoss ? -1000 : -1400);
+        scene.add(enemy); aliens.push(enemy);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if(!gameStarted || isPaused) return;
+
+        // Ship updates with improved movement
+        if(handStates['Right'].active) {
+            player1.visible = true;
+            player1.position.x += (handStates['Right'].targetX - player1.position.x) * 0.25;
+            player1.scale.lerp(new THREE.Vector3(handStates['Right'].rage?4.5:1, handStates['Right'].rage?4.5:1, handStates['Right'].rage?4.5:1), 0.2);
+            if(handStates['Right'].shooting) spawnProjectile(player1.position.x, handStates['Right'].rage);
+        } else { player1.visible = false; }
+
+        if(handStates['Left'].active) {
+            player2.visible = true;
+            player2.position.x += (handStates['Left'].targetX - player2.position.x) * 0.25;
+            player2.scale.lerp(new THREE.Vector3(handStates['Left'].rage?4.5:1, handStates['Left'].rage?4.5:1, handStates['Left'].rage?4.5:1), 0.2);
+            if(handStates['Left'].shooting) spawnProjectile(player2.position.x, handStates['Left'].rage);
+        } else { player2.visible = false; }
+
+        bullets.forEach((b, i) => {
+            b.position.z -= 85; // Faster Bullets
+            aliens.forEach((a, j) => {
+                if(a.position.z > -1000 && b.position.distanceTo(a.position) < (a.isBoss?65:25)) {
+                    a.hp -= b.isSuper ? 150 : 60; // Increased damage
+                    a.hpBar.scale.x = Math.max(0, a.hp / a.maxHp);
+                    if(!b.isSuper) { scene.remove(b); bullets.splice(i, 1); } // Laser pierces enemies
+                    if(a.hp <= 0) {
+                        if(a.isBoss) { 
+                            bossDefeated++; 
+                            enemiesInLevel = 0;
+                            hp = Math.min(100, hp + 30);
+                            document.getElementById('hp-bar').style.width = hp + "%";
+                            document.getElementById('boss-count').innerText = bossDefeated;
+                            document.getElementById('overlay-msg').innerHTML = '<div class="level-up-text">BOSS ANNIHILATED!</div>';
+                            document.getElementById('overlay-msg').style.display = 'block';
+                            setTimeout(()=> document.getElementById('overlay-msg').style.display = 'none', 2000);
+                            if(bossDefeated >= 15) endGame();
+                        } else {
+                            score++; enemiesInLevel++;
+                            document.getElementById('score').innerText = score;
+                        }
+                        scene.remove(a); aliens.splice(j, 1);
+                    }
+                }
+            });
+            if(b && b.position.z < -1600) { scene.remove(b); bullets.splice(i, 1); }
+        });
+
+        aliens.forEach((a, i) => {
+            a.position.z += (a.isBoss ? 2.5 : 4.5);
+            if(a.isBoss && Date.now() - a.lastShot > 2000 && a.position.z > -800) {
+                const eb = new THREE.Mesh(new THREE.SphereGeometry(4), new THREE.MeshBasicMaterial({color: 0xffaa00}));
+                eb.position.set(a.position.x, 0, a.position.z + 50);
+                scene.add(eb); enemyBullets.push(eb);
+                a.lastShot = Date.now();
+            }
+            if(a.position.z > 150) { scene.remove(a); aliens.splice(i, 1); }
+        });
+
+        enemyBullets.forEach((eb, i) => {
+            eb.position.z += 15;
+            if((player1.visible && eb.position.distanceTo(player1.position) < 20) || (player2.visible && eb.position.distanceTo(player2.position) < 20)) {
+                hp -= 10;
+                document.getElementById('hp-bar').style.width = hp + "%";
+                scene.remove(eb); enemyBullets.splice(i, 1);
+            }
+            if(eb.position.z > 200) { scene.remove(eb); enemyBullets.splice(i, 1); }
+        });
+
+        if(hp <= 0) location.reload();
+        renderer.render(scene, camera);
+    }
+
+    function togglePause() { 
+        isPaused = !isPaused; 
+        document.getElementById('p-btn').innerText = isPaused ? "RESUME" : "PAUSE";
+    }
+
+    function startGame() { 
+        gameStarted = true; 
+        document.getElementById('start-screen').style.display = 'none'; 
+        document.getElementById('ui').style.display = 'block'; 
+        document.getElementById('menu-panel').style.display = 'block';
+        init(); 
+    }
+
+    function endGame() {
+        gameStarted = false;
+        document.getElementById('ui').style.display = 'none';
+        document.getElementById('menu-panel').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'flex';
+    }
+
+    setInterval(() => {
+        if(gameStarted && !isPaused) {
+            const isBossActive = aliens.some(e => e.isBoss);
+            if(enemiesInLevel >= 62 && !isBossActive) spawnEnemy(true);
+            else if(aliens.length < 6 && !isBossActive) spawnEnemy(false);
+        }
+    }, 500);
+</script>
+</body>
+</html>
